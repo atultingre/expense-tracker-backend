@@ -66,7 +66,7 @@ const authenticateToken = (req, res, next) => {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+  jwt.verify(token, "8806234568", (err, user) => {
     if (err) {
       return res.status(403).json({ error: "Forbidden" });
     }
@@ -100,7 +100,7 @@ app.post(`/api/register`, async (req, res) => {
     // Save the user to the database
     await newUser.save();
     // Generate a JWT token
-    const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ userId: newUser._id }, "8806234568");
 
     res.header("Access-Control-Allow-Origin", "*").json({ token });
   } catch (error) {
@@ -127,7 +127,7 @@ app.post(`/api/login`, async (req, res) => {
     }
 
     // Generate a JWT token
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ userId: user._id }, "8806234568");
 
     res.header("Access-Control-Allow-Origin", "*").json({ token });
   } catch (error) {
