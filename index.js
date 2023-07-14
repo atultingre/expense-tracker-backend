@@ -13,18 +13,26 @@ const authenticateToken = require("./middleware/authenticateToken");
 
 const connectDB = async () => {
   try {
-    await mongoose
-      .connect(process.env.DATABASE_URI)
-      .then(() => console.log("Connected to MongoDB"));
+    await mongoose.connect(process.env.DATABASE_URI);
+    console.log("Connected to MongoDB");
   } catch (error) {
     console.error("MongoDB connection error:", error);
   }
 };
-connectDB()
+
+
 
 // Parse request body as JSON
 app.use(express.json());
-app.use(cors())
+
+// app.use(cors())
+
+app.use(cors({
+  origin: ['https://spendanalyzer.netlify.app', 'http://localhost:3000', "*"],
+  methods: "GET,POST,PUT,DELETE,HEAD,DELETE",
+  credentials: true,
+}));
+
 app.use('/', express.static(path.join(__dirname, 'public')))
 // Enable preflight requests
 app.options("/api/register", cors());
@@ -163,5 +171,6 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  connectDB()
 });
 
