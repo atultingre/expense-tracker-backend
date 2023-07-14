@@ -40,7 +40,6 @@ app.use(cors());
 // Enable preflight requests
 app.options("/api/register", cors());
 
-
 // Middleware to verify the JWT token and extract the user ID
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -87,7 +86,7 @@ app.post(`/api/register`, async (req, res) => {
     // Generate a JWT token
     const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET);
 
-    res.json({ token });
+    res.header("Access-Control-Allow-Origin", "*").json({ token });
   } catch (error) {
     console.error("Error registering user:", error);
     res.status(500).json({ error: "Failed to register user" });
@@ -114,7 +113,7 @@ app.post(`/api/login`, async (req, res) => {
     // Generate a JWT token
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
 
-    res.json({ token });
+    res.header("Access-Control-Allow-Origin", "*").json({ token });
   } catch (error) {
     console.error("Error logging in:", error);
     res.status(500).json({ error: "Failed to login" });
@@ -127,7 +126,7 @@ app.post(`/api/login`, async (req, res) => {
 app.get(`/api/expenses`, authenticateToken, async (req, res) => {
   try {
     const expenses = await Expense.find({ userId: req.user.userId });
-    res.json(expenses);
+    res.header("Access-Control-Allow-Origin", "*").json(expenses);
   } catch (error) {
     console.error("Error fetching expenses:", error);
     res.status(500).json({ error: "Failed to fetch expenses" });
@@ -142,7 +141,7 @@ app.post(`/api/expenses`, authenticateToken, async (req, res) => {
       userId: req.user.userId,
     });
     await expense.save();
-    res.json(expense);
+    res.header("Access-Control-Allow-Origin", "*").json(expense);
   } catch (error) {
     console.error("Error saving expense:", error);
     res.status(500).json({ error: "Failed to save expense" });
@@ -156,7 +155,7 @@ app.put(`/api/expenses/:id`, async (req, res) => {
     const expense = await Expense.findByIdAndUpdate(id, req.body, {
       new: true,
     });
-    res.json(expense);
+    res.header("Access-Control-Allow-Origin", "*").json(expense);
   } catch (error) {
     console.error("Error updating expense:", error);
     res.status(500).json({ error: "Failed to update expense" });
@@ -168,17 +167,11 @@ app.delete(`/api/expenses/:id`, async (req, res) => {
   try {
     const { id } = req.params;
     await Expense.findByIdAndDelete(id);
-    res.sendStatus(204);
+    res.header("Access-Control-Allow-Origin", "*").sendStatus(204);
   } catch (error) {
     console.error("Error deleting expense:", error);
     res.status(500).json({ error: "Failed to delete expense" });
   }
-});
-
-// Add the 'Access-Control-Allow-Origin' header
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  next();
 });
 
 // Start the server
