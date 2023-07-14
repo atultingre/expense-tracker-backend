@@ -5,18 +5,26 @@ const cors = require("cors");
 const app = express();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-require("dotenv").config();
+const dotenv = require('dotenv');
 const connectDB = require("./config/connectDB");
 const User = require("./models/User");
 const Expense = require("./models/Expense");
 const authenticateToken = require("./middleware/authenticateToken");
 
-connectDB();
+const PORT = 3000;
+
+dotenv.config()
 
 // Parse request body as JSON
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: ['https://expense-tracker-backend-7c9c.onrender.com', 'http://localhost:3000','https://spendanalyzer.netlify.app' ,"*"],
+  methods: "GET,POST,PUT,DELETE,HEAD,DELETE",
+  credentials: true,
+}));
+
 app.use("/", express.static(path.join(__dirname, "public")));
+
 // Enable preflight requests
 app.options("/api/register", cors());
 
@@ -149,7 +157,7 @@ app.all("*", (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
+  connectDB();
   console.log(`Server is running on port ${PORT}`);
 });
