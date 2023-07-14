@@ -6,11 +6,20 @@ const app = express();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const connectDB = require('./config/connectDB');
 const User = require("./models/User");
 const Expense = require("./models/Expense");
 const authenticateToken = require("./middleware/authenticateToken");
 
+
+const connectDB = async () => {
+  try {
+    await mongoose
+      .connect(process.env.DATABASE_URI)
+      .then(() => console.log("Connected to MongoDB"));
+  } catch (error) {
+    console.error("MongoDB connection error:", error);
+  }
+};
 connectDB()
 
 // Parse request body as JSON
