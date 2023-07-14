@@ -6,9 +6,6 @@ const cors = require("cors");
 const app = express();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const User = require("./models/User");
-const Expense = require("./models/Expense");
-const authenticateToken = require("./middleware/authenticateToken");
 
 // Parse request body as JSON
 app.use(express.json());
@@ -22,6 +19,22 @@ app.use(
     credentials: true,
   })
 );
+
+const Expense = mongoose.model("Expense", {
+  title: String,
+  amount: Number,
+  date: Date,
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+});
+
+const User = mongoose.model("User", {
+  username: String,
+  password: String,
+});
+
 
 app.use("/", express.static(path.join(__dirname, "public")));
 // Enable preflight requests
@@ -41,6 +54,27 @@ const connectDB = async () => {
 
 // routes
 app.use("/", require("./routes/root"));
+
+
+
+// Middleware to verify the JWT token and extract the user ID
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    req.user = user;
+    next();
+  });
+};
 
 // Define API endpoints
 // Register user
