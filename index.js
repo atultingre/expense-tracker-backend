@@ -5,31 +5,27 @@ const cors = require("cors");
 const app = express();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const dotenv = require('dotenv');
-const connectDB = require("./config/connectDB");
+require("dotenv").config();
+const connectDB = require('./config/connectDB');
 const User = require("./models/User");
 const Expense = require("./models/Expense");
 const authenticateToken = require("./middleware/authenticateToken");
 
-const PORT = 3000;
-
-dotenv.config()
+connectDB()
 
 // Parse request body as JSON
 app.use(express.json());
+// app.use(cors())
 app.use(cors({
-  origin: ['https://expense-tracker-backend-7c9c.onrender.com', 'http://localhost:3000','https://spendanalyzer.netlify.app' ,"*"],
+  origin: ['https://spendanalyzer.netlify.app', 'http://localhost:3000', "*"],
   methods: "GET,POST,PUT,DELETE,HEAD,DELETE",
   credentials: true,
 }));
 
-app.use("/", express.static(path.join(__dirname, "public")));
-
-// Enable preflight requests
-app.options("/api/register", cors());
+app.use('/', express.static(path.join(__dirname, 'public')))
 
 // routes
-app.use("/", require("./routes/root"));
+app.use('/', require('./routes/root'))
 
 // Define API endpoints
 // Register user
@@ -145,19 +141,20 @@ app.delete(`/api/expenses/:id`, async (req, res) => {
 
 // Add this route handler before starting the server
 
-app.all("*", (req, res) => {
-  res.status(404);
-  if (req.accepts("html")) {
-    res.sendFile(path.join(__dirname, "views", "404.html"));
-  } else if (req.accepts("json")) {
-    res.json({ message: "404 Not Found" });
+app.all('*', (req, res) => {
+  res.status(404)
+  if (req.accepts('html')) {
+      res.sendFile(path.join(__dirname, 'views', '404.html'))
+  } else if (req.accepts('json')) {
+      res.json({ message: '404 Not Found' })
   } else {
-    res.type("txt").send("404 Not Found");
+      res.type('txt').send('404 Not Found')
   }
-});
+})
 
 // Start the server
-app.listen(PORT, () => {
-  connectDB();
-  console.log(`Server is running on port ${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+mongoose.connection.once('open', () => {
+  console.log('Connected to MongoDB')
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+})
