@@ -15,14 +15,11 @@ connectDB()
 
 // Parse request body as JSON
 app.use(express.json());
-// app.use(cors())
-app.use(cors({
-  origin: ['https://spendanalyzer.netlify.app', 'http://localhost:3000', "*"],
-  methods: "GET,POST,PUT,DELETE,HEAD,DELETE",
-  credentials: true,
-}));
-
+app.use(cors())
 app.use('/', express.static(path.join(__dirname, 'public')))
+// Enable preflight requests
+app.options("/api/register", cors());
+
 
 // routes
 app.use('/', require('./routes/root'))
@@ -154,7 +151,8 @@ app.all('*', (req, res) => {
 
 // Start the server
 const PORT = process.env.PORT || 3000;
-mongoose.connection.once('open', () => {
-  console.log('Connected to MongoDB')
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
-})
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
