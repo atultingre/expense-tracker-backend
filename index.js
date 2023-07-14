@@ -174,6 +174,11 @@ app.delete(`/api/expenses/:id`, async (req, res) => {
   }
 });
 
+// Add this route handler before starting the server
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
