@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
@@ -5,12 +6,29 @@ const cors = require("cors");
 const app = express();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-require("dotenv").config();
 const User = require("./models/User");
 const Expense = require("./models/Expense");
 const authenticateToken = require("./middleware/authenticateToken");
 
+// Parse request body as JSON
+app.use(express.json());
 
+// app.use(cors())
+
+app.use(
+  cors({
+    origin: ["https://spendanalyzer.netlify.app", "http://localhost:3000", "*"],
+    methods: "GET,POST,PUT,DELETE,HEAD,DELETE",
+    credentials: true,
+  })
+);
+
+app.use("/", express.static(path.join(__dirname, "public")));
+// Enable preflight requests
+app.options("/api/register", cors());
+
+
+// Connect to MongoDB
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.DATABASE_URI);
@@ -21,25 +39,8 @@ const connectDB = async () => {
 };
 
 
-
-// Parse request body as JSON
-app.use(express.json());
-
-// app.use(cors())
-
-app.use(cors({
-  origin: ['https://spendanalyzer.netlify.app', 'http://localhost:3000', "*"],
-  methods: "GET,POST,PUT,DELETE,HEAD,DELETE",
-  credentials: true,
-}));
-
-app.use('/', express.static(path.join(__dirname, 'public')))
-// Enable preflight requests
-app.options("/api/register", cors());
-
-
 // routes
-app.use('/', require('./routes/root'))
+app.use("/", require("./routes/root"));
 
 // Define API endpoints
 // Register user
@@ -155,22 +156,21 @@ app.delete(`/api/expenses/:id`, async (req, res) => {
 
 // Add this route handler before starting the server
 
-app.all('*', (req, res) => {
-  res.status(404)
-  if (req.accepts('html')) {
-      res.sendFile(path.join(__dirname, 'views', '404.html'))
-  } else if (req.accepts('json')) {
-      res.json({ message: '404 Not Found' })
+app.all("*", (req, res) => {
+  res.status(404);
+  if (req.accepts("html")) {
+    res.sendFile(path.join(__dirname, "views", "404.html"));
+  } else if (req.accepts("json")) {
+    res.json({ message: "404 Not Found" });
   } else {
-      res.type('txt').send('404 Not Found')
+    res.type("txt").send("404 Not Found");
   }
-})
+});
 
 // Start the server
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  connectDB()
+  connectDB();
 });
-
