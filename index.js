@@ -44,7 +44,7 @@ app.options("/api/register", cors());
 // Connect to MongoDB
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.DATABASE_URI);
+    await mongoose.connect("mongodb+srv://atultingre:atultingre@cluster0.qxl77bm.mongodb.net/expensetracker?retryWrites=true&w=majority");
     console.log("Connected to MongoDB");
   } catch (error) {
     console.error("MongoDB connection error:", error);
