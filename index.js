@@ -1,11 +1,11 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
+const cors = require("cors");
 const app = express();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const BASE_URL = process.env.BASE_URL;
 
 // Connect to MongoDB
 mongoose
@@ -35,6 +35,11 @@ const User = mongoose.model("User", {
 
 // Parse request body as JSON
 app.use(express.json());
+app.use(cors());
+
+// Enable preflight requests
+app.options("/api/register", cors());
+
 
 // Middleware to verify the JWT token and extract the user ID
 const authenticateToken = (req, res, next) => {
@@ -168,6 +173,12 @@ app.delete(`/api/expenses/:id`, async (req, res) => {
     console.error("Error deleting expense:", error);
     res.status(500).json({ error: "Failed to delete expense" });
   }
+});
+
+// Add the 'Access-Control-Allow-Origin' header
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  next();
 });
 
 // Start the server
