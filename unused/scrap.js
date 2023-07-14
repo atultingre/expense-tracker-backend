@@ -6,24 +6,67 @@ const app = express();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const connectDB = require("./config/connectDB");
-const User = require("./models/User");
-const Expense = require("./models/Expense");
-const authenticateToken = require("./middleware/authenticateToken");
+const corsOptions = require("../config/corsOptions");
+const connectDB = require("../config/connectDB");
+const User = require("../models/User");
+const Expense = require("../models/Expense");
 
+// Connect to MongoDB
+// mongoose
+//   .connect(process.env.MONGODB_URI, {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+//   })
+//   .then(() => console.log("Connected to MongoDB"))
+//   .catch((error) => console.error("MongoDB connection error:", error));
 connectDB();
+
+// Define Expense model
+// const Expense = mongoose.model("Expense", {
+//   title: String,
+//   amount: Number,
+//   date: Date,
+//   userId: {
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: "User",
+//   },
+// });
+
+// Define User model
+// const User = mongoose.model("User", {
+//   username: String,
+//   password: String,
+// });
 
 // Parse request body as JSON
 app.use(express.json());
 app.use(cors());
+// corsOptions
 app.use("/", express.static(path.join(__dirname, "public")));
-// Enable preflight requests
-app.options("/api/register", cors());
+// // Enable preflight requests
+// app.options("/api/register", cors());
 
-// routes
-app.use("/", require("./routes/root"));
+// Middleware to verify the JWT token and extract the user ID
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    req.user = user;
+    next();
+  });
+};
 
 // Define API endpoints
+
 // Register user
 app.post(`/api/register`, async (req, res) => {
   try {
@@ -82,6 +125,8 @@ app.post(`/api/login`, async (req, res) => {
     res.status(500).json({ error: "Failed to login" });
   }
 });
+
+// Apply the authentication middleware to the expense endpoints
 
 // GET THE EXPENSES
 app.get(`/api/expenses`, authenticateToken, async (req, res) => {
@@ -150,7 +195,6 @@ app.all("*", (req, res) => {
 
 // Start the server
 const PORT = process.env.PORT || 3000;
-mongoose.connection.once("open", () => {
-  console.log("Connected to MongoDB");
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
